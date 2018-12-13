@@ -36,9 +36,12 @@ namespace LZ
             }
             return Encoding.Default.GetString(byteList.ToArray());
         }
-        static string Encode(string BS, int limit, List<Phrase> _table)
+        static string Encode(string BS, int limit, List<Phrase> table)
         {
-            List<Phrase> table = new List<Phrase>(_table);
+            int phrasesize = (int)Math.Log(limit, 2);
+            table.Clear();
+            table.Add(new Phrase() { input = "0", codeWord = new CodeWord { Prefix = 0, Update = 0 }, code = "0".PadLeft(phrasesize, '0') });
+            table.Add(new Phrase() { input = "1", codeWord = new CodeWord { Prefix = 0, Update = 0 }, code = "1".PadLeft(phrasesize, '0') });
             string temp = "";
             string encoded = "";
             for (int i = 0; i < BS.Length; i++)
@@ -55,7 +58,7 @@ namespace LZ
                             Prefix = indexprefix,
                             Update = temp.Last() - 48 //0 это 48-й символ в таблице ASCII, 1 это 49-й символ в таблице ASCII
                         };
-                        string _code = Convert.ToString(indexprefix + 1, 2).PadLeft(4, '0') + temp.Last();
+                        string _code = Convert.ToString(indexprefix + 1, 2).PadLeft(phrasesize, '0') + temp.Last();
                         table.Add(new Phrase() { input = temp, codeWord = _codeWord, code = _code });
                         encoded += _code;
                         temp = "";
@@ -76,12 +79,14 @@ namespace LZ
             }
             return encoded;
         }
-        static string Decode(string encoded, int limit, List<Phrase> _table)
+        static string Decode(string encoded, int limit, List<Phrase> table)
         {
-            List<Phrase> table = new List<Phrase>(_table);
             int phrasesize = (int)Math.Log(limit, 2);
+            table.Clear();
+            table.Add(new Phrase() { input = "0", codeWord = new CodeWord { Prefix = 0, Update = 0 }, code = "0".PadLeft(phrasesize, '0') });
+            table.Add(new Phrase() { input = "1", codeWord = new CodeWord { Prefix = 0, Update = 0 }, code = "1".PadLeft(phrasesize, '0') });
             string BS = "";
-            for (int i = 0; i < encoded.Length; i+= phrasesize + 1)
+            for (int i = 0; i < encoded.Length; i += phrasesize + 1)
             {
                 string _code = encoded.Substring(i, phrasesize + 1);
                 int _prefix = Convert.ToInt32(encoded.Substring(i, phrasesize), 2);
@@ -106,15 +111,11 @@ namespace LZ
             {
                 BS += Convert.ToString(b, 2).PadLeft(8, '0');
             }
-           // BS = "10101100001001100111001101001111001110100111110011100001100111001100111000";
-            List<Phrase> table = new List<Phrase>()
-            {
-                new Phrase(){input = "0", codeWord = new CodeWord {Prefix=0, Update=0},code="00000" },
-                new Phrase(){input = "1", codeWord = new CodeWord {Prefix=0, Update=0},code="00001" }
-            };
+            //BS = "10101100001001100111001101001111001110100111110011100001100111001100111000";
+            List<Phrase> table = new List<Phrase>();
             string encoded = Encode(BS, 16, table);
             //Console.WriteLine("Кодированная строка: \t{0}", encoded);
-            string decoded = Decode(encoded, 16, table);
+            //string decoded = Decode(encoded, 16, table);
             //decoded = BinaryToString(decoded);
             //Console.WriteLine("Декодированная строка: \t{0}", decoded);
             Console.WriteLine("Степень сжатия 16бит: \t{0}", (double)BS.Length / (double)encoded.Length);
