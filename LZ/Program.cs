@@ -90,7 +90,7 @@ namespace LZ
             {
                 string _code = encoded.Substring(i, phrasesize + 1);
                 int _prefix = Convert.ToInt32(encoded.Substring(i, phrasesize), 2);
-                int _update = encoded[i + 4].Equals('1') ? 1 : 0;
+                int _update = encoded[i + phrasesize].Equals('1') ? 1 : 0;
                 int index = table.FindIndex(x => x.code == _code);
                 string _input = table[_prefix - 1].input + (_update == 1 ? "1" : "0");
                 if (index == -1)
