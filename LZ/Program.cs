@@ -46,31 +46,31 @@ namespace LZ
             string encoded = "";
             for (int i = 0; i < BS.Length; i++)
             {
+                if (table.Count == limit)
+                {
+                    table.Clear();
+                    table.Add(new Phrase() { input = "0", codeWord = new CodeWord { Prefix = 0, Update = 0 }, code = "0".PadLeft(phrasesize, '0') });
+                    table.Add(new Phrase() { input = "1", codeWord = new CodeWord { Prefix = 0, Update = 0 }, code = "1".PadLeft(phrasesize, '0') });
+                }
                 temp += BS[i];
                 int index = table.FindIndex(x => x.input == temp);
                 if (index == -1)
                 {
-                    if (table.Count < limit)
+                    int indexprefix = table.FindIndex(x => x.input == temp.Remove(temp.Length - 1));
+                    CodeWord _codeWord = new CodeWord()
                     {
-                        int indexprefix = table.FindIndex(x => x.input == temp.Remove(temp.Length - 1));
-                        CodeWord _codeWord = new CodeWord()
-                        {
-                            Prefix = indexprefix,
-                            Update = temp.Last() - 48 //0 это 48-й символ в таблице ASCII, 1 это 49-й символ в таблице ASCII
-                        };
-                        string _code = Convert.ToString(indexprefix + 1, 2).PadLeft(phrasesize, '0') + temp.Last();
-                        table.Add(new Phrase() { input = temp, codeWord = _codeWord, code = _code });
-                        encoded += _code;
-                        temp = "";
-                    }
-                    else
+                        Prefix = indexprefix,
+                        Update = temp.Last() - 48 //0 это 48-й символ в таблице ASCII, 1 это 49-й символ в таблице ASCII
+                    };
+                    string _code = Convert.ToString(indexprefix + 1, 2).PadLeft(phrasesize, '0') + temp.Last();
+                    table.Add(new Phrase() { input = temp, codeWord = _codeWord, code = _code });
+                    encoded += _code;
+                    if (encoded.Length == 70)
                     {
-                        temp = temp.Remove(temp.Length - 1);
-                        index = table.FindIndex(x => x.input == temp);
-                        encoded += table[index].code;
-                        i--;
-                        temp = "";
+                        Console.Write("");
                     }
+                    temp = "";
+
                 }
                 else if (i == BS.Length - 1)
                 {
@@ -91,6 +91,12 @@ namespace LZ
                 string _code = encoded.Substring(i, phrasesize + 1);
                 int _prefix = Convert.ToInt32(encoded.Substring(i, phrasesize), 2);
                 int _update = encoded[i + phrasesize].Equals('1') ? 1 : 0;
+                if (table.Count == limit)
+                {
+                    table.Clear();
+                    table.Add(new Phrase() { input = "0", codeWord = new CodeWord { Prefix = 0, Update = 0 }, code = "0".PadLeft(phrasesize, '0') });
+                    table.Add(new Phrase() { input = "1", codeWord = new CodeWord { Prefix = 0, Update = 0 }, code = "1".PadLeft(phrasesize, '0') });
+                }
                 int index = table.FindIndex(x => x.code == _code);
                 string _input = table[_prefix - 1].input + (_update == 1 ? "1" : "0");
                 if (index == -1)
