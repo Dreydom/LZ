@@ -13,17 +13,16 @@ namespace LZ
     }
     public class Phrase
     {
-        public Phrase() { }
-        public Phrase(string input, int prefix, int update, string code)
+        public Phrase(string _input, int _prefix, int _update, string _code)
         {
-            this.input = input;
-            this.codeWord.Prefix = prefix;
-            this.codeWord.Update = update;
-            this.code = code;
+            Input = _input;
+            CodeWord.Prefix = _prefix;
+            CodeWord.Update = _update;
+            Code = Code;
         }
-        public string input { get; set; }
-        public CodeWord codeWord { get; set; }
-        public string code { get; set; }
+        public string Input { get; set; }
+        public CodeWord CodeWord { get; set; }
+        public string Code { get; set; }
     }
     class Program
     {
@@ -31,51 +30,39 @@ namespace LZ
         {
             List<Byte> byteList = new List<Byte>();
             for (int i = 0; i < data.Length; i += 8)
-            {
                 byteList.Add(Convert.ToByte(data.Substring(i, 8), 2));
-            }
             return Encoding.Default.GetString(byteList.ToArray());
         }
         static string Encode(string BS, int limit, List<Phrase> table)
         {
             int phrasesize = (int)Math.Log(limit, 2);
             table.Clear();
-            table.Add(new Phrase() { input = "0", codeWord = new CodeWord { Prefix = 0, Update = 0 }, code = "0".PadLeft(phrasesize, '0') });
-            table.Add(new Phrase() { input = "1", codeWord = new CodeWord { Prefix = 0, Update = 0 }, code = "1".PadLeft(phrasesize, '0') });
-            string temp = "";
+            table.Add(new Phrase("0", 0, 0, "0".PadLeft(phrasesize, '0')));
+            table.Add(new Phrase("1", 0, 0, "1".PadLeft(phrasesize, '0')));
+            string _input = "";
             string encoded = "";
             for (int i = 0; i < BS.Length; i++)
             {
                 if (table.Count == limit)
                 {
                     table.Clear();
-                    table.Add(new Phrase() { input = "0", codeWord = new CodeWord { Prefix = 0, Update = 0 }, code = "0".PadLeft(phrasesize, '0') });
-                    table.Add(new Phrase() { input = "1", codeWord = new CodeWord { Prefix = 0, Update = 0 }, code = "1".PadLeft(phrasesize, '0') });
+                    table.Add(new Phrase("0", 0, 0, "0".PadLeft(phrasesize, '0')));
+                    table.Add(new Phrase("1", 0, 0, "1".PadLeft(phrasesize, '0')));
                 }
-                temp += BS[i];
-                int index = table.FindIndex(x => x.input == temp);
+                _input += BS[i];
+                int index = table.FindIndex(x => x.Input == _input);
                 if (index == -1)
                 {
-                    int indexprefix = table.FindIndex(x => x.input == temp.Remove(temp.Length - 1));
-                    CodeWord _codeWord = new CodeWord()
-                    {
-                        Prefix = indexprefix,
-                        Update = temp.Last() - 48 //0 это 48-й символ в таблице ASCII, 1 это 49-й символ в таблице ASCII
-                    };
-                    string _code = Convert.ToString(indexprefix + 1, 2).PadLeft(phrasesize, '0') + temp.Last();
-                    table.Add(new Phrase() { input = temp, codeWord = _codeWord, code = _code });
+                    int indexprefix = table.FindIndex(x => x.Input == _input.Remove(_input.Length - 1));
+                    int _prefix = indexprefix;
+                    int _update = _input.Last() - 48; //0 это 48-й символ в таблице ASCII, 1 это 49-й символ в таблице ASCII
+                    string _code = Convert.ToString(indexprefix + 1, 2).PadLeft(phrasesize, '0') + _input.Last();
+                    table.Add(new Phrase(_input, _prefix, _update, _code));
                     encoded += _code;
-                    if (encoded.Length == 70)
-                    {
-                        Console.Write("");
-                    }
-                    temp = "";
-
+                    _input = "";
                 }
                 else if (i == BS.Length - 1)
-                {
-                    encoded += table[index].code;
-                }
+                    encoded += table[index].Code;
             }
             return encoded;
         }
@@ -83,8 +70,8 @@ namespace LZ
         {
             int phrasesize = (int)Math.Log(limit, 2);
             table.Clear();
-            table.Add(new Phrase() { input = "0", codeWord = new CodeWord { Prefix = 0, Update = 0 }, code = "0".PadLeft(phrasesize, '0') });
-            table.Add(new Phrase() { input = "1", codeWord = new CodeWord { Prefix = 0, Update = 0 }, code = "1".PadLeft(phrasesize, '0') });
+            table.Add(new Phrase("0", 0, 0, "0".PadLeft(phrasesize, '0')));
+            table.Add(new Phrase("1", 0, 0, "1".PadLeft(phrasesize, '0')));
             string BS = "";
             for (int i = 0; i < encoded.Length; i += phrasesize + 1)
             {
@@ -94,16 +81,13 @@ namespace LZ
                 if (table.Count == limit)
                 {
                     table.Clear();
-                    table.Add(new Phrase() { input = "0", codeWord = new CodeWord { Prefix = 0, Update = 0 }, code = "0".PadLeft(phrasesize, '0') });
-                    table.Add(new Phrase() { input = "1", codeWord = new CodeWord { Prefix = 0, Update = 0 }, code = "1".PadLeft(phrasesize, '0') });
+                    table.Add(new Phrase("0", 0, 0, "0".PadLeft(phrasesize, '0')));
+                    table.Add(new Phrase("1", 0, 0, "1".PadLeft(phrasesize, '0')));
                 }
-                int index = table.FindIndex(x => x.code == _code);
-                string _input = table[_prefix - 1].input + (_update == 1 ? "1" : "0");
+                int index = table.FindIndex(x => x.Code == _code);
+                string _input = table[_prefix - 1].Input + (_update == 1 ? "1" : "0");
                 if (index == -1)
-                {
-                    CodeWord _codeWord = new CodeWord() { Prefix = _prefix, Update = _update };
-                    table.Add(new Phrase() { input = _input, codeWord = _codeWord, code = _code });
-                }
+                    table.Add(new Phrase(_input, _prefix, _update, _code));
                 BS += _input;
             }
             return BS;
@@ -114,9 +98,7 @@ namespace LZ
             string BS = "";
             byte[] bytes = Encoding.Default.GetBytes(input);
             foreach (byte b in bytes)
-            {
                 BS += Convert.ToString(b, 2).PadLeft(8, '0');
-            }
             //BS = "10101100001001100111001101001111001110100111110011100001100111001100111000";
             List<Phrase> table = new List<Phrase>();
             string encoded = Encode(BS, 16, table);
