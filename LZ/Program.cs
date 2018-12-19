@@ -15,10 +15,11 @@ namespace LZ
     {
         public Phrase(string _input, int _prefix, int _update, string _code)
         {
+            CodeWord = new CodeWord();
             Input = _input;
             CodeWord.Prefix = _prefix;
             CodeWord.Update = _update;
-            Code = Code;
+            Code = _code;
         }
         public string Input { get; set; }
         public CodeWord CodeWord { get; set; }
@@ -37,8 +38,8 @@ namespace LZ
         {
             int phrasesize = (int)Math.Log(limit, 2);
             table.Clear();
-            table.Add(new Phrase("0", 0, 0, "0".PadLeft(phrasesize, '0')));
-            table.Add(new Phrase("1", 0, 0, "1".PadLeft(phrasesize, '0')));
+            table.Add(new Phrase("0", 0, 0, "".PadLeft(phrasesize, '0') + "0"));
+            table.Add(new Phrase("1", 0, 0, "".PadLeft(phrasesize, '0') + "1"));
             string _input = "";
             string encoded = "";
             for (int i = 0; i < BS.Length; i++)
@@ -46,8 +47,8 @@ namespace LZ
                 if (table.Count == limit)
                 {
                     table.Clear();
-                    table.Add(new Phrase("0", 0, 0, "0".PadLeft(phrasesize, '0')));
-                    table.Add(new Phrase("1", 0, 0, "1".PadLeft(phrasesize, '0')));
+                    table.Add(new Phrase("0", 0, 0, "".PadLeft(phrasesize, '0') + "0"));
+                    table.Add(new Phrase("1", 0, 0, "".PadLeft(phrasesize, '0') + "1"));
                 }
                 _input += BS[i];
                 int index = table.FindIndex(x => x.Input == _input);
@@ -70,8 +71,8 @@ namespace LZ
         {
             int phrasesize = (int)Math.Log(limit, 2);
             table.Clear();
-            table.Add(new Phrase("0", 0, 0, "0".PadLeft(phrasesize, '0')));
-            table.Add(new Phrase("1", 0, 0, "1".PadLeft(phrasesize, '0')));
+            table.Add(new Phrase("0", 0, 0, "".PadLeft(phrasesize, '0') + "0"));
+            table.Add(new Phrase("1", 0, 0, "".PadLeft(phrasesize, '0') + "1"));
             string BS = "";
             for (int i = 0; i < encoded.Length; i += phrasesize + 1)
             {
@@ -81,11 +82,11 @@ namespace LZ
                 if (table.Count == limit)
                 {
                     table.Clear();
-                    table.Add(new Phrase("0", 0, 0, "0".PadLeft(phrasesize, '0')));
-                    table.Add(new Phrase("1", 0, 0, "1".PadLeft(phrasesize, '0')));
+                    table.Add(new Phrase("0", 0, 0, "".PadLeft(phrasesize, '0') + "0"));
+                    table.Add(new Phrase("1", 0, 0, "".PadLeft(phrasesize, '0') + "1"));
                 }
                 int index = table.FindIndex(x => x.Code == _code);
-                string _input = table[_prefix - 1].Input + (_update == 1 ? "1" : "0");
+                string _input = (_prefix == 0 ? "" : table[_prefix - 1].Input) + (_update == 1 ? "1" : "0");
                 if (index == -1)
                     table.Add(new Phrase(_input, _prefix, _update, _code));
                 BS += _input;
